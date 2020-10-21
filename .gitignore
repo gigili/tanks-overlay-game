@@ -1,0 +1,7 @@
+.idea/
+.cache/
+dist/
+node_modules/
+.env
+assets/sprites/kenny/
+idea.md
