@@ -3,14 +3,8 @@ import * as PIXI from 'pixi.js'
 export class Player{
 	health = 100;
 	sprite = null;
-	posX = 0;
-	posY = 0;
-	isReversed = false;
-	constructor(posX : number, posY: number, isReversed = false) {
+	constructor(public posX : number, public posY: number, private readonly isReversed = false) {
 		this.health = 100;
-		this.posX = posX;
-		this.posY = posY;
-		this.isReversed = isReversed;
 		this.setup();
 	}
 
