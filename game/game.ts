@@ -7,7 +7,8 @@ const app = new PIXI.Application({
 	width: window.screen.width,
 	height: 100,
 	resolution: 1,
-	backgroundColor: 0x616161
+	transparent: true,
+	//backgroundColor: 0x616161
 });
 
 PIXI.Loader.shared
@@ -70,7 +71,7 @@ const WinnerTextProperties = {
 
 function setup() {
 	gameState.p1 = new Player(0, -10);
-	gameState.p2 = new Player(window.visualViewport.width, -10, true);
+	gameState.p2 = new Player(window.innerWidth, -10, true);
 
 	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
 
@@ -78,13 +79,13 @@ function setup() {
 	gameState.labels.p1Health.position.set(50, 20);
 
 	gameState.labels.p2Health = new PIXI.Text(`HP: ${gameState.p2.health}`, HPTextProperties);
-	gameState.labels.p2Health.position.set(window.visualViewport.width - 105, 20);
+	gameState.labels.p2Health.position.set(window.innerWidth - 105, 20);
 
 	app.stage.addChild(gameState.labels.p1Health);
 	app.stage.addChild(gameState.labels.p2Health);
 
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
-	gameState.labels.winner.position.set(window.visualViewport.width / 2 - gameState.labels.winner.getLocalBounds(this).width, 100 - gameState.labels.winner.getLocalBounds(this).height - 30);
+	gameState.labels.winner.position.set(window.innerWidth / 2 - gameState.labels.winner.getLocalBounds(this).width, 100 - gameState.labels.winner.getLocalBounds(this).height - 30);
 	app.stage.addChild(gameState.labels.winner);
 
 	app.stage.addChild(gameState.p1.sprite);

@@ -6,7 +6,7 @@ export const POSITION = {
 		y: 47
 	},
 	p2: {
-		x: window.visualViewport.width - 120,
+		x: window.innerWidth - 120,
 		y: 47
 	}
 };
