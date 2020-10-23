@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js'
 import {Player} from "./Player";
 import {Bullet} from "./Bullet";
 import {doesOverlap, pickBulletDistance} from "../utils";
+import {client}  from "../utils/tmi";
+import {User, GameState} from "../utils/types";
 
 const app = new PIXI.Application({
 	width: window.screen.width,
@@ -13,32 +15,17 @@ const app = new PIXI.Application({
 
 PIXI.Loader.shared
 	.add("../assets/sprites/tank.png")
-	.add("../assets/sprites/bullet.png")
+	//.add("../assets/sprites/bullet.png")
+	.add("../assets/sprites/bullets/melkey.png")
+	.add("../assets/sprites/bullets/pride.png")
+	.add("../assets/sprites/bullets/regular.png")
 	.load(setup);
 
-type GameState = {
-	p1: Player | null,
-	p2: Player | null,
-	bullet: Bullet | null,
-	isGameOver: boolean,
-	isBulletMoving: boolean,
-	currentMove: string,
-	currentEnemy: Player | null,
-	moveIncrement: number,
-	winner: string | null,
-	bulletRange: number
-	labels: {
-		p1Health: PIXI.Text | null,
-		p2Health: PIXI.Text | null,
-		winner: PIXI.Text | null
-	}
-}
-
-const gameState: GameState = {
+export const gameState: GameState = {
 	p1: null,
 	p2: null,
 	bullet: null,
-	isGameOver: false,
+	isGameOver: null,
 	isBulletMoving: false,
 	currentMove: "p1",
 	currentEnemy: null,
@@ -49,7 +36,14 @@ const gameState: GameState = {
 		p1Health: null,
 		p2Health: null,
 		winner: null,
-	}
+	},
+	players: [
+		{ username: "gacbl", displayName: "gacbl"},
+		{ username: "tchibu", displayName: "tcibu" },
+		{ username: "pronerd_jay", displayName: "pronerd_jay" },
+		{ username: "thatn00b__", displayName: "thatn00b__"},
+	],
+	leaderboard: {}
 };
 
 //@ts-ignore
@@ -70,32 +64,19 @@ const WinnerTextProperties = {
 };
 
 function setup() {
-	gameState.p1 = new Player(0, -10);
-	gameState.p2 = new Player(window.innerWidth, -10, true);
+	gameState.labels.p1Health = new PIXI.Text("", HPTextProperties);
+	gameState.labels.p1Health.position.set(50, 5);
 
-	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
-
-	gameState.labels.p1Health = new PIXI.Text(`HP: ${gameState.p1.health}`, HPTextProperties);
-	gameState.labels.p1Health.position.set(50, 20);
-
-	gameState.labels.p2Health = new PIXI.Text(`HP: ${gameState.p2.health}`, HPTextProperties);
-	gameState.labels.p2Health.position.set(window.innerWidth - 105, 20);
+	gameState.labels.p2Health = new PIXI.Text("", HPTextProperties);
+	gameState.labels.p2Health.position.set(window.innerWidth - 105, 5);
 
 	app.stage.addChild(gameState.labels.p1Health);
 	app.stage.addChild(gameState.labels.p2Health);
 
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
-	gameState.labels.winner.position.set(window.innerWidth / 2 - gameState.labels.winner.getLocalBounds(this).width, 100 - gameState.labels.winner.getLocalBounds(this).height - 30);
 	app.stage.addChild(gameState.labels.winner);
 
-	app.stage.addChild(gameState.p1.sprite);
-	app.stage.addChild(gameState.p2.sprite);
-
-	if (!gameState.isBulletMoving) {
-		gameState.currentEnemy = gameState.p2;
-		spawnBullet("p1");
-		gameState.isBulletMoving = true;
-	}
+	startNewGame();
 
 	app.ticker.add(delta => gameLoop(delta));
 }
@@ -103,9 +84,12 @@ function setup() {
 document.body.appendChild(app.view);
 
 function gameLoop(deltaTime: number) {
+	if(gameState.p1 === null || gameState.p2 === null) return;
+
 	if (gameState.p1.health <= 0 || gameState.p2.health <= 0) {
 		gameState.isGameOver = true;
-		gameState.winner = gameState.currentMove;
+		gameState.winner = gameState.currentMove === "p1" ? gameState.p2.displayName : gameState.p1.displayName;
+		gameState.bullet.sprite.isMoving = false;
 	}
 
 	if (!gameState.isGameOver) {
@@ -118,7 +102,13 @@ function gameLoop(deltaTime: number) {
 }
 
 function movePlayer(deltaTime: number) {
-	if (doesOverlap(gameState.bullet)) {
+	if (doesOverlap(gameState.bullet, gameState.currentMove)) {
+		if (gameState.currentMove === "p1") {
+			gameState.p2.health -= gameState.bullet.damage;
+		}else if (gameState.currentMove === "p2") {
+			gameState.p1.health -= gameState.bullet.damage;
+		}
+
 		flipGameState();
 		cleanUp();
 		spawnBullet(gameState.currentMove);
@@ -144,17 +134,15 @@ function moveBullet(): boolean {
 
 function flipGameState() {
 	if (gameState.currentMove === "p1") {
-		if (doesOverlap(gameState.bullet)) {
-			gameState.p2.health -= gameState.bullet.damage;
-		}
 		gameState.currentMove = "p2";
 		gameState.currentEnemy = gameState.p1;
 	} else {
-		if (doesOverlap(gameState.bullet)) {
-			gameState.p1.health -= gameState.bullet.damage;
-		}
 		gameState.currentMove = "p1";
 		gameState.currentEnemy = gameState.p2;
+	}
+
+	if (gameState.bullet !== null) {
+		gameState.bullet.sprite.isMoving = false;
 	}
 
 	gameState.moveIncrement *= -1;
@@ -162,6 +150,9 @@ function flipGameState() {
 
 function spawnBullet(positionKey: string) {
 	const isReversed = positionKey === "p2";
+	if(gameState.bullet !== null){
+		gameState.bullet.sprite.isMoving = false;
+	}
 	gameState.bullet = new Bullet(positionKey, isReversed);
 	gameState.isBulletMoving = true;
 	gameState.bulletRange = pickBulletDistance(gameState.currentMove === "p1" ? gameState.p1 : gameState.p2, gameState.currentEnemy);
@@ -170,17 +161,85 @@ function spawnBullet(positionKey: string) {
 
 function cleanUp() {
 	app.stage.children.forEach((child: PIXI.Sprite, index) => {
-		if (child["spriteName"] && child["spriteName"] === "Bullet") {
+		if (child["spriteName"] === "Bullet" && (child["isMoving"] === false || gameState.isGameOver)) {
 			app.stage.removeChildAt(index);
 		}
 	});
 }
 
 function displayInformation() {
-	gameState.labels.p1Health.text = `HP ${gameState.p1.health}`;
-	gameState.labels.p2Health.text = `HP ${gameState.p2.health}`;
+	gameState.labels.p1Health.text = `${gameState.p1.displayName}\n${gameState.p1.health}`;
+	gameState.labels.p2Health.text = `${gameState.p2.displayName}\n${gameState.p2.health}`;
 
-	if(gameState.isGameOver){
-		gameState.labels.winner.text = `WINNER: ${gameState.winner || ''}`;
+	const winnerText = (gameState.isGameOver === null || !gameState.winner) ? "" : `WINNER: ${gameState.winner || ''}`;
+	console.log("WinnerText", winnerText);
+	//if(gameState.isGameOver){
+		gameState.labels.winner.text = winnerText;
+		gameState.labels.winner.anchor.set(0.5, 0.5);
+		gameState.labels.winner.position.set(
+			window.innerWidth / 2,
+			50
+		);
+	//}
+}
+
+function startNewGame(){
+	if(gameState.players.length < 2) return;
+	if (gameState.isGameOver === false) return;
+
+	const p1Name = pickPlayer();
+	const p2Name = pickPlayer(p1Name);
+
+	gameState.p1 = new Player(0, -10, false, p1Name);
+	gameState.p2 = new Player(window.innerWidth, -10, true, p2Name);
+
+	app.stage.addChild(gameState.p1.sprite);
+	app.stage.addChild(gameState.p2.sprite);
+
+	gameState.currentMove = "p1";
+	gameState.moveIncrement = 1;
+	gameState.winner = null;
+	gameState.currentEnemy = gameState.p2;
+
+	gameState.isGameOver = null;
+	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
+	spawnBullet("p1");
+	displayInformation();
+}
+
+function pickPlayer(player : string = ""): string{
+	let name = "";
+
+	do{
+		const index = Math.floor(Math.random() * gameState.players.length);
+		name = gameState.players[index].displayName;
+	}while((name === player || name == ""));
+
+	return name;
+}
+
+client.connect().catch(err => console.error(err));
+
+client.on("message", (channel: string, userstate: User, message: string, self: User) => {
+	if (self) return;
+
+	addNewPlayer(userstate);
+
+	if (userstate.username === "gacbl"){
+		if(message === "!newGame") {
+			//client.say(channel, "We are playing a game of Tanks");
+			startNewGame();
+		}
 	}
+});
+
+function addNewPlayer(user: User){
+	for (let player of gameState.players){
+		if(player.username === user.username){
+			return false;
+		}
+	}
+
+	const username = user.username;
+	gameState.players.push({ username, displayName: user["display-name"]});
 }

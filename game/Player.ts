@@ -1,10 +1,10 @@
 import * as PIXI from 'pixi.js'
 
+
 export class Player{
-	health = 100;
+	health = 25;
 	sprite = null;
-	constructor(public posX : number, public posY: number, private readonly isReversed = false) {
-		this.health = 100;
+	constructor(public posX : number, public posY: number, private readonly isReversed = false, public displayName : string = "") {
 		this.setup();
 	}
 

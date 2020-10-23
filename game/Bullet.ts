@@ -2,11 +2,11 @@ import * as PIXI from "pixi.js";
 
 export const POSITION = {
 	p1: {
-		x: 80,
+		x: 125,
 		y: 47
 	},
 	p2: {
-		x: window.innerWidth - 120,
+		x: window.innerWidth - 130,
 		y: 47
 	}
 };
@@ -20,12 +20,34 @@ export class Bullet {
 	}
 
 	setup(){
-		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["../assets/sprites/bullet.png"].texture);
+		const spriteIndex = Math.floor(Math.random() * 3) + 1;
+		let sprite = "regular";
+
+		switch(spriteIndex){
+			case 1:
+				sprite = "regular";
+			break;
+
+			case 2:
+				sprite = "melkey";
+			break;
+
+			case 3:
+				sprite = "pride";
+			break;
+		}
+
+		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources[`../assets/sprites/bullets/${sprite}.png`].texture);
 		this.sprite.position.set(POSITION[this.positionKey].x, POSITION[this.positionKey].y);
 		this.sprite.spriteName = "Bullet";
+		this.sprite.isMoving = true;
+
+		let multiplayer = 1;
 		if(this.isReversed){
-			this.sprite.scale.x = -1;
+			multiplayer = -1;
 		}
+
+		this.sprite.scale.set(2 * multiplayer, 2);
 	}
 }
 
