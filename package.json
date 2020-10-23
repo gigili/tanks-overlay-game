@@ -10,7 +10,7 @@
   "author": "Igor Ilić",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.14.0",
+    "@types/node": "^14.14.2",
     "nodemon": "^2.0.6",
     "parcel": "^1.12.4"
   },
