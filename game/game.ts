@@ -12,9 +12,28 @@ const app = new PIXI.Application({
 
 PIXI.Loader.shared
 	.add("../assets/sprites/tank.png")
+	.add("../assets/sprites/bullet.png")
 	.load(setup);
 
-const gameState = {
+type GameState = {
+	p1: Player | null,
+	p2: Player | null,
+	bullet: Bullet | null,
+	isGameOver: boolean,
+	isBulletMoving: boolean,
+	currentMove: string,
+	currentEnemy: Player | null,
+	moveIncrement: number,
+	winner: string | null,
+	bulletRange: number
+	labels: {
+		p1Health: PIXI.Text | null,
+		p2Health: PIXI.Text | null,
+		winner: PIXI.Text | null
+	}
+}
+
+const gameState: GameState = {
 	p1: null,
 	p2: null,
 	bullet: null,
@@ -22,11 +41,31 @@ const gameState = {
 	isBulletMoving: false,
 	currentMove: "p1",
 	currentEnemy: null,
-	bulletSpeed: 3,
 	moveIncrement: 1,
 	winner: null,
-	damage: 50,
-	bulletRange: 0
+	bulletRange: 0,
+	labels: {
+		p1Health: null,
+		p2Health: null,
+		winner: null,
+	}
+};
+
+//@ts-ignore
+window.gameState = gameState;
+
+const HPTextProperties = {
+	align: "center",
+	fontSize: "15px",
+	fontFamily: "Arial",
+	fill: "red",
+	fontWeight: "bold"
+};
+
+const WinnerTextProperties = {
+	...HPTextProperties,
+	fill: "green",
+	fontSize: "30px"
 };
 
 function setup() {
@@ -34,6 +73,19 @@ function setup() {
 	gameState.p2 = new Player(window.visualViewport.width, -10, true);
 
 	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
+
+	gameState.labels.p1Health = new PIXI.Text(`HP: ${gameState.p1.health}`, HPTextProperties);
+	gameState.labels.p1Health.position.set(50, 20);
+
+	gameState.labels.p2Health = new PIXI.Text(`HP: ${gameState.p2.health}`, HPTextProperties);
+	gameState.labels.p2Health.position.set(window.visualViewport.width - 105, 20);
+
+	app.stage.addChild(gameState.labels.p1Health);
+	app.stage.addChild(gameState.labels.p2Health);
+
+	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
+	gameState.labels.winner.position.set(window.visualViewport.width / 2 - gameState.labels.winner.getLocalBounds(this).width, 100 - gameState.labels.winner.getLocalBounds(this).height - 30);
+	app.stage.addChild(gameState.labels.winner);
 
 	app.stage.addChild(gameState.p1.sprite);
 	app.stage.addChild(gameState.p2.sprite);
@@ -60,10 +112,12 @@ function gameLoop(deltaTime: number) {
 	} else {
 		cleanUp();
 	}
+
+	displayInformation();
 }
 
 function movePlayer(deltaTime: number) {
-	if(doesOverlap(gameState.bullet)){
+	if (doesOverlap(gameState.bullet)) {
 		flipGameState();
 		cleanUp();
 		spawnBullet(gameState.currentMove);
@@ -71,7 +125,7 @@ function movePlayer(deltaTime: number) {
 	}
 
 	if (gameState.isBulletMoving && moveBullet()) {
-		gameState.bullet.sprite.position.x += Math.floor(gameState.moveIncrement * (deltaTime * gameState.bulletSpeed) + 1);
+		gameState.bullet.sprite.position.x += Math.floor(gameState.moveIncrement * (deltaTime * gameState.bullet.speed));
 	} else {
 		flipGameState();
 		cleanUp();
@@ -83,7 +137,6 @@ function moveBullet(): boolean {
 	if (gameState.currentMove === "p1") {
 		return gameState.bullet.sprite.position.x <= gameState.bulletRange;
 	} else {
-		console.log(gameState.bullet.sprite.position.x, gameState.bullet.sprite.position.x >= gameState.bulletRange)
 		return gameState.bullet.sprite.position.x >= gameState.bulletRange;
 	}
 }
@@ -91,31 +144,42 @@ function moveBullet(): boolean {
 function flipGameState() {
 	if (gameState.currentMove === "p1") {
 		if (doesOverlap(gameState.bullet)) {
-			gameState.p2.health -= gameState.damage;
+			gameState.p2.health -= gameState.bullet.damage;
 		}
 		gameState.currentMove = "p2";
 		gameState.currentEnemy = gameState.p1;
 	} else {
 		if (doesOverlap(gameState.bullet)) {
-			gameState.p1.health -= gameState.damage;
+			gameState.p1.health -= gameState.bullet.damage;
 		}
 		gameState.currentMove = "p1";
 		gameState.currentEnemy = gameState.p2;
 	}
 
 	gameState.moveIncrement *= -1;
-	//gameState.bullet.sprite.position.x = gameState.bullet.sprite.position.x + (10 * gameState.moveIncrement);
 }
 
 function spawnBullet(positionKey: string) {
-	gameState.bullet = new Bullet(positionKey);
+	const isReversed = positionKey === "p2";
+	gameState.bullet = new Bullet(positionKey, isReversed);
 	gameState.isBulletMoving = true;
 	gameState.bulletRange = pickBulletDistance(gameState.currentMove === "p1" ? gameState.p1 : gameState.p2, gameState.currentEnemy);
 	app.stage.addChild(gameState.bullet.sprite);
 }
 
 function cleanUp() {
-	/*if(app.stage.children.length > 2) {
-		app.stage.removeChildAt(2);
-	}*/
+	app.stage.children.forEach((child: PIXI.Sprite, index) => {
+		if (child["spriteName"] && child["spriteName"] === "Bullet") {
+			app.stage.removeChildAt(index);
+		}
+	});
+}
+
+function displayInformation() {
+	gameState.labels.p1Health.text = `HP ${gameState.p1.health}`;
+	gameState.labels.p2Health.text = `HP ${gameState.p2.health}`;
+
+	if(gameState.isGameOver){
+		gameState.labels.winner.text = `WINNER: ${gameState.winner || ''}`;
+	}
 }

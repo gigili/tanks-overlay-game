@@ -2,28 +2,30 @@ import * as PIXI from "pixi.js";
 
 export const POSITION = {
 	p1: {
-		x: 120,
+		x: 80,
 		y: 47
 	},
 	p2: {
-		x: window.visualViewport.width - 135,
+		x: window.visualViewport.width - 120,
 		y: 47
 	}
 };
 
 export class Bullet {
-	sprite = new PIXI.Graphics();
-
-	constructor(public positionKey) {
+	sprite = null;
+	damage = 25;
+	speed = 3;
+	constructor(public positionKey, private readonly isReversed = false) {
 		this.setup();
 	}
 
 	setup(){
-		//this.sprite = new PIXI.Rectangle(this.posX, this.posY, 20, 20);
-		this.sprite.beginFill(0x000000);
-		this.sprite.drawRect(POSITION[this.positionKey].x, POSITION[this.positionKey].y, 5, 5);
-		this.sprite.position.set(0, 0);
-		this.sprite.endFill();
+		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["../assets/sprites/bullet.png"].texture);
+		this.sprite.position.set(POSITION[this.positionKey].x, POSITION[this.positionKey].y);
+		this.sprite.spriteName = "Bullet";
+		if(this.isReversed){
+			this.sprite.scale.x = -1;
+		}
 	}
 }
 

@@ -11,6 +11,7 @@ export class Player{
 	setup(){
 		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["../assets/sprites/tank.png"].texture);
 		this.sprite.position.set(this.posX, this.posY);
+		this.sprite.spriteName = "Player";
 
 		if(this.isReversed){
 			this.sprite.scale.x = -1;

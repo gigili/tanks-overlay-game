@@ -2,18 +2,18 @@ import {Bullet, POSITION} from "../game/Bullet";
 import {Player} from "../game/Player";
 
 export function doesOverlap(b: Bullet): boolean {
-	return (b.sprite.position.x > 1124 || b.sprite.position.x < 0);
+	return (b.sprite.position.x > POSITION["p2"].x  || b.sprite.position.x < POSITION["p1"].x);
 }
 
 export function pickBulletDistance(currentPlayer: Player, enemy: Player): number{
 	const ranges = {
 		"p1":{
-			min: 700,
-			max: window.visualViewport.width + 50
+			min: POSITION["p2"].x - 400,
+			max: POSITION["p2"].x + 50
 		},
 		"p2": {
-			min: -50,
-			max: 300
+			min: 0,
+			max: POSITION["p1"].x + 400
 		}
 	}
 
