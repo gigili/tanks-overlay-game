@@ -162,7 +162,9 @@ function spawnBullet(positionKey: string) {
 function cleanUp() {
 	app.stage.children.forEach((child: PIXI.Sprite, index) => {
 		if (child["spriteName"] === "Bullet" && (child["isMoving"] === false || gameState.isGameOver)) {
-			app.stage.removeChildAt(index);
+      setTimeout(() => {
+		    app.stage.removeChildAt(index);
+      }, 500);
 		}
 	});
 }
