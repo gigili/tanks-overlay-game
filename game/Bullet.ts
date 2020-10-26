@@ -3,11 +3,11 @@ import * as PIXI from "pixi.js";
 export const POSITION = {
 	p1: {
 		x: 125,
-		y: 47
+		y: window.innerHeight - 47
 	},
 	p2: {
 		x: window.innerWidth - 130,
-		y: 47
+		y: window.innerHeight - 47
 	}
 };
 

@@ -3,11 +3,11 @@ import {Player} from "./Player";
 import {Bullet} from "./Bullet";
 import {doesOverlap, pickBulletDistance} from "../utils";
 import {client}  from "../utils/tmi";
-import {User, GameState} from "../utils/types";
+import {User, GameState, Sprite} from "../utils/types";
 
 const app = new PIXI.Application({
-	width: window.screen.width,
-	height: 100,
+	width: window.innerWidth,
+	height: window.innerHeight,
 	resolution: 1,
 	transparent: true,
 	//backgroundColor: 0x616161
@@ -65,10 +65,10 @@ const WinnerTextProperties = {
 
 function setup() {
 	gameState.labels.p1Health = new PIXI.Text("", HPTextProperties);
-	gameState.labels.p1Health.position.set(50, 5);
+	gameState.labels.p1Health.position.set(60, window.innerHeight - 85);
 
 	gameState.labels.p2Health = new PIXI.Text("", HPTextProperties);
-	gameState.labels.p2Health.position.set(window.innerWidth - 105, 5);
+	gameState.labels.p2Health.position.set(window.innerWidth - 115, window.innerHeight - 85);
 
 	app.stage.addChild(gameState.labels.p1Health);
 	app.stage.addChild(gameState.labels.p2Health);
@@ -86,12 +86,6 @@ document.body.appendChild(app.view);
 function gameLoop(deltaTime: number) {
 	if(gameState.p1 === null || gameState.p2 === null) return;
 
-	if (gameState.p1.health <= 0 || gameState.p2.health <= 0) {
-		gameState.isGameOver = true;
-		gameState.winner = gameState.currentMove === "p1" ? gameState.p2.displayName : gameState.p1.displayName;
-		gameState.bullet.sprite.isMoving = false;
-	}
-
 	if (!gameState.isGameOver) {
 		movePlayer(deltaTime);
 	} else {
@@ -103,13 +97,7 @@ function gameLoop(deltaTime: number) {
 
 function movePlayer(deltaTime: number) {
 	if (doesOverlap(gameState.bullet, gameState.currentMove)) {
-		if (gameState.currentMove === "p1") {
-			gameState.p2.health -= gameState.bullet.damage;
-		}else if (gameState.currentMove === "p2") {
-			gameState.p1.health -= gameState.bullet.damage;
-		}
-
-		flipGameState();
+  	flipGameState();
 		cleanUp();
 		spawnBullet(gameState.currentMove);
 		return;
@@ -149,22 +137,30 @@ function flipGameState() {
 }
 
 function spawnBullet(positionKey: string) {
-	const isReversed = positionKey === "p2";
-	if(gameState.bullet !== null){
+  if(gameState.isGameOver) return;
+  const isReversed = positionKey === "p2";
+
+  if(gameState.bullet !== null){
 		gameState.bullet.sprite.isMoving = false;
 	}
+
 	gameState.bullet = new Bullet(positionKey, isReversed);
 	gameState.isBulletMoving = true;
 	gameState.bulletRange = pickBulletDistance(gameState.currentMove === "p1" ? gameState.p1 : gameState.p2, gameState.currentEnemy);
-	app.stage.addChild(gameState.bullet.sprite);
+	
+  app.stage.addChild(gameState.bullet.sprite);
 }
 
 function cleanUp() {
-	app.stage.children.forEach((child: PIXI.Sprite, index) => {
-		if (child["spriteName"] === "Bullet" && (child["isMoving"] === false || gameState.isGameOver)) {
-      setTimeout(() => {
-		    app.stage.removeChildAt(index);
-      }, 500);
+	app.stage.children.forEach((child: Sprite, index) => {
+		if (child.spriteName === "Bullet" && (child.isMoving === false || gameState.isGameOver)) {
+      if(!gameState.isGameOver){
+        setTimeout(() => {
+          app.stage.removeChildAt(index);
+        }, 500);
+      }else{
+        app.stage.removeChildAt(index);
+      }
 		}
 	});
 }
@@ -173,16 +169,19 @@ function displayInformation() {
 	gameState.labels.p1Health.text = `${gameState.p1.displayName}\n${gameState.p1.health}`;
 	gameState.labels.p2Health.text = `${gameState.p2.displayName}\n${gameState.p2.health}`;
 
-	const winnerText = (gameState.isGameOver === null || !gameState.winner) ? "" : `WINNER: ${gameState.winner || ''}`;
-	console.log("WinnerText", winnerText);
-	//if(gameState.isGameOver){
-		gameState.labels.winner.text = winnerText;
-		gameState.labels.winner.anchor.set(0.5, 0.5);
-		gameState.labels.winner.position.set(
-			window.innerWidth / 2,
-			50
-		);
-	//}
+  const winnerText = (gameState.isGameOver === null || gameState.winner === null) ? "" : `WINNER: ${gameState.winner || ''}`;
+	gameState.labels.winner.text = winnerText;
+	gameState.labels.winner.anchor.set(0.5, 0.5);
+	gameState.labels.winner.position.set(
+		window.innerWidth / 2,
+		window.innerHeight - 30 
+	);
+
+  if(winnerText.length > 0){
+    setTimeout(() => {
+      gameState.winner = null;
+    }, 5000);
+  }
 }
 
 function startNewGame(){
@@ -192,8 +191,8 @@ function startNewGame(){
 	const p1Name = pickPlayer();
 	const p2Name = pickPlayer(p1Name);
 
-	gameState.p1 = new Player(0, -10, false, p1Name);
-	gameState.p2 = new Player(window.innerWidth, -10, true, p2Name);
+	gameState.p1 = new Player(0, window.innerHeight - 100, false, p1Name);
+	gameState.p2 = new Player(window.innerWidth, window.innerHeight - 100, true, p2Name);
 
 	app.stage.addChild(gameState.p1.sprite);
 	app.stage.addChild(gameState.p2.sprite);

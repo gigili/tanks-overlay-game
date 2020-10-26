@@ -2,6 +2,11 @@ import * as PIXI from "pixi.js";
 import { Bullet } from "../game/Bullet"
 import { Player } from "../game/Player"
 
+export type Sprite extends PIXI.Sprite = { 
+  spriteName: string,
+  isMoving: boolean
+}
+
 export type User = {
     'badges': { 'broadcaster': string, 'warcraft': string },
     'color': string,

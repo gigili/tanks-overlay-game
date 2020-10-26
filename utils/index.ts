@@ -15,7 +15,21 @@ export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 		isHit = bulletPosition < p1Position;
 	}
 
-	return isHit;
+  if(isHit){
+    if (gameState.currentMove === "p1") {
+	  	gameState.p2.health -= gameState.bullet.damage;
+	  }else if (gameState.currentMove === "p2") {
+		  gameState.p1.health -= gameState.bullet.damage;
+  	}
+  }
+
+	if (gameState.p1.health <= 0 || gameState.p2.health <= 0) {
+		gameState.isGameOver = true;
+		gameState.winner = gameState.currentMove === "p1" ? gameState.p2.displayName : gameState.p1.displayName;
+		gameState.bullet.sprite.isMoving = false;
+  }
+	
+  return isHit;
 }
 
 export function pickBulletDistance(currentPlayer: Player, enemy: Player): number{
