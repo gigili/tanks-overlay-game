@@ -1,20 +1,20 @@
 import * as PIXI from 'pixi.js'
 
-
-export class Player{
+export class Player {
 	health = 25;
 	sprite = null;
-	constructor(public posX : number, public posY: number, private readonly isReversed = false, public displayName : string = "") {
+
+	constructor(public posX: number, public posY: number, private readonly isReversed = false, public displayName: string = "") {
 		this.setup();
 	}
 
-	setup(){
+	setup() {
 		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources["../assets/sprites/tank.png"].texture);
 		this.sprite.position.set(this.posX, this.posY);
 		this.sprite.spriteName = "Player";
-    this.sprite.isMoving = false;
+		this.sprite.isMoving = false;
 
-		if(this.isReversed){
+		if (this.isReversed) {
 			this.sprite.scale.x = -1;
 		}
 	}

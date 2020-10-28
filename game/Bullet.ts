@@ -15,26 +15,27 @@ export class Bullet {
 	sprite = null;
 	damage = 25;
 	speed = 3;
+
 	constructor(public positionKey, private readonly isReversed = false) {
 		this.setup();
 	}
 
-	setup(){
+	setup() {
 		const spriteIndex = Math.floor(Math.random() * 3) + 1;
 		let sprite = "regular";
 
-		switch(spriteIndex){
+		switch (spriteIndex) {
 			case 1:
 				sprite = "regular";
-			break;
+				break;
 
 			case 2:
 				sprite = "melkey";
-			break;
+				break;
 
 			case 3:
 				sprite = "pride";
-			break;
+				break;
 		}
 
 		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources[`../assets/sprites/bullets/${sprite}.png`].texture);
@@ -43,7 +44,7 @@ export class Bullet {
 		this.sprite.isMoving = true;
 
 		let multiplayer = 1;
-		if(this.isReversed){
+		if (this.isReversed) {
 			multiplayer = -1;
 		}
 

@@ -1,6 +1,6 @@
 import {Bullet, POSITION} from "../game/Bullet";
 import {Player} from "../game/Player";
-import { gameState } from "../game/game";
+import {gameState} from "../game/game";
 
 export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 	const bulletPosition = b.sprite.getBounds().width + b.sprite.position.x;
@@ -9,32 +9,32 @@ export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 
 	let isHit = false;
 
-	if(currentPlayer == "p1"){
+	if (currentPlayer == "p1") {
 		isHit = bulletPosition > p2Position;
-	}else if(currentPlayer == "p2"){
+	} else if (currentPlayer == "p2") {
 		isHit = bulletPosition < p1Position;
 	}
 
-  if(isHit){
-    if (gameState.currentMove === "p1") {
-	  	gameState.p2.health -= gameState.bullet.damage;
-	  }else if (gameState.currentMove === "p2") {
-		  gameState.p1.health -= gameState.bullet.damage;
-  	}
-  }
+	if (isHit) {
+		if (gameState.currentMove === "p1") {
+			gameState.p2.health -= gameState.bullet.damage;
+		} else if (gameState.currentMove === "p2") {
+			gameState.p1.health -= gameState.bullet.damage;
+		}
+	}
 
 	if (gameState.p1.health <= 0 || gameState.p2.health <= 0) {
 		gameState.isGameOver = true;
 		gameState.winner = gameState.currentMove === "p1" ? gameState.p2.displayName : gameState.p1.displayName;
 		gameState.bullet.sprite.isMoving = false;
-  }
-	
-  return isHit;
+	}
+
+	return isHit;
 }
 
-export function pickBulletDistance(currentPlayer: Player, enemy: Player): number{
+export function pickBulletDistance(currentPlayer: Player, enemy: Player): number {
 	const ranges = {
-		"p1":{
+		"p1": {
 			min: POSITION["p2"].x - 300,
 			max: POSITION["p2"].x + 50
 		},
@@ -44,9 +44,9 @@ export function pickBulletDistance(currentPlayer: Player, enemy: Player): number
 		}
 	}
 
-	const p = currentPlayer.sprite.position.x === 0 ? "p1": "p2";
+	const p = currentPlayer.sprite.position.x === 0 ? "p1" : "p2";
 	const min = ranges[p].min;
 	const max = ranges[p].max;
 
-	return Math.floor( min + Math.random() * (max - min)) + 1;
+	return Math.floor(min + Math.random() * (max - min)) + 1;
 }

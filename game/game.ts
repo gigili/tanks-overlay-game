@@ -2,8 +2,8 @@ import * as PIXI from 'pixi.js'
 import {Player} from "./Player";
 import {Bullet} from "./Bullet";
 import {doesOverlap, pickBulletDistance} from "../utils";
-import {client}  from "../utils/tmi";
-import {User, GameState, Sprite} from "../utils/types";
+import {client} from "../utils/tmi";
+import {GameState, Sprite, User} from "../utils/types";
 
 const app = new PIXI.Application({
 	width: window.innerWidth,
@@ -38,10 +38,10 @@ export const gameState: GameState = {
 		winner: null,
 	},
 	players: [
-		{ username: "gacbl", displayName: "gacbl"},
-		{ username: "tchibu", displayName: "tcibu" },
-		{ username: "pronerd_jay", displayName: "pronerd_jay" },
-		{ username: "thatn00b__", displayName: "thatn00b__"},
+		{username: "gacbl", displayName: "gacbl"},
+		{username: "tchibu", displayName: "tcibu"},
+		{username: "pronerd_jay", displayName: "pronerd_jay"},
+		{username: "thatn00b__", displayName: "thatn00b__"},
 	],
 	leaderboard: {}
 };
@@ -84,7 +84,7 @@ function setup() {
 document.body.appendChild(app.view);
 
 function gameLoop(deltaTime: number) {
-	if(gameState.p1 === null || gameState.p2 === null) return;
+	if (gameState.p1 === null || gameState.p2 === null) return;
 
 	if (!gameState.isGameOver) {
 		movePlayer(deltaTime);
@@ -97,7 +97,7 @@ function gameLoop(deltaTime: number) {
 
 function movePlayer(deltaTime: number) {
 	if (doesOverlap(gameState.bullet, gameState.currentMove)) {
-  	flipGameState();
+		flipGameState();
 		cleanUp();
 		spawnBullet(gameState.currentMove);
 		return;
@@ -137,30 +137,30 @@ function flipGameState() {
 }
 
 function spawnBullet(positionKey: string) {
-  if(gameState.isGameOver) return;
-  const isReversed = positionKey === "p2";
+	if (gameState.isGameOver) return;
+	const isReversed = positionKey === "p2";
 
-  if(gameState.bullet !== null){
+	if (gameState.bullet !== null) {
 		gameState.bullet.sprite.isMoving = false;
 	}
 
 	gameState.bullet = new Bullet(positionKey, isReversed);
 	gameState.isBulletMoving = true;
 	gameState.bulletRange = pickBulletDistance(gameState.currentMove === "p1" ? gameState.p1 : gameState.p2, gameState.currentEnemy);
-	
-  app.stage.addChild(gameState.bullet.sprite);
+
+	app.stage.addChild(gameState.bullet.sprite);
 }
 
 function cleanUp() {
 	app.stage.children.forEach((child: Sprite, index) => {
 		if (child.spriteName === "Bullet" && (child.isMoving === false || gameState.isGameOver)) {
-      if(!gameState.isGameOver){
-        setTimeout(() => {
-          app.stage.removeChildAt(index);
-        }, 500);
-      }else{
-        app.stage.removeChildAt(index);
-      }
+			if (!gameState.isGameOver) {
+				setTimeout(() => {
+					app.stage.removeChildAt(index);
+				}, 500);
+			} else {
+				app.stage.removeChildAt(index);
+			}
 		}
 	});
 }
@@ -169,23 +169,23 @@ function displayInformation() {
 	gameState.labels.p1Health.text = `${gameState.p1.displayName}\n${gameState.p1.health}`;
 	gameState.labels.p2Health.text = `${gameState.p2.displayName}\n${gameState.p2.health}`;
 
-  const winnerText = (gameState.isGameOver === null || gameState.winner === null) ? "" : `WINNER: ${gameState.winner || ''}`;
+	const winnerText = (gameState.isGameOver === null || gameState.winner === null) ? "" : `WINNER: ${gameState.winner || ''}`;
 	gameState.labels.winner.text = winnerText;
 	gameState.labels.winner.anchor.set(0.5, 0.5);
 	gameState.labels.winner.position.set(
 		window.innerWidth / 2,
-		window.innerHeight - 30 
+		window.innerHeight - 30
 	);
 
-  if(winnerText.length > 0){
-    setTimeout(() => {
-      gameState.winner = null;
-    }, 5000);
-  }
+	if (winnerText.length > 0) {
+		setTimeout(() => {
+			gameState.winner = null;
+		}, 5000);
+	}
 }
 
-function startNewGame(){
-	if(gameState.players.length < 2) return;
+function startNewGame() {
+	if (gameState.players.length < 2) return;
 	if (gameState.isGameOver === false) return;
 
 	const p1Name = pickPlayer();
@@ -208,13 +208,13 @@ function startNewGame(){
 	displayInformation();
 }
 
-function pickPlayer(player : string = ""): string{
+function pickPlayer(player: string = ""): string {
 	let name = "";
 
-	do{
+	do {
 		const index = Math.floor(Math.random() * gameState.players.length);
 		name = gameState.players[index].displayName;
-	}while((name === player || name == ""));
+	} while ((name === player || name == ""));
 
 	return name;
 }
@@ -226,21 +226,21 @@ client.on("message", (channel: string, userstate: User, message: string, self: U
 
 	addNewPlayer(userstate);
 
-	if (userstate.username === "gacbl"){
-		if(message === "!newGame") {
+	if (userstate.username === "gacbl") {
+		if (message === "!newGame") {
 			//client.say(channel, "We are playing a game of Tanks");
 			startNewGame();
 		}
 	}
 });
 
-function addNewPlayer(user: User){
-	for (let player of gameState.players){
-		if(player.username === user.username){
+function addNewPlayer(user: User) {
+	for (let player of gameState.players) {
+		if (player.username === user.username) {
 			return false;
 		}
 	}
 
 	const username = user.username;
-	gameState.players.push({ username, displayName: user["display-name"]});
+	gameState.players.push({username, displayName: user["display-name"]});
 }
