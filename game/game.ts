@@ -38,12 +38,10 @@ export const gameState: GameState = {
 		winner: null,
 	},
 	players: [
-		{username: "gacbl", displayName: "gacbl"},
-		{username: "tchibu", displayName: "tcibu"},
-		{username: "pronerd_jay", displayName: "pronerd_jay"},
-		{username: "thatn00b__", displayName: "thatn00b__"},
+		{username: 'p1', displayName: 'p1'},
+		{username: 'p2', displayName: 'p2'},
 	],
-	leaderboard: {}
+	leaderboard: []
 };
 
 //@ts-ignore
@@ -76,7 +74,10 @@ function setup() {
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
 	app.stage.addChild(gameState.labels.winner);
 
-	startNewGame();
+	let gameStarted = false;
+	while (!gameStarted) {
+		gameStarted = startNewGame();
+	}
 
 	app.ticker.add(delta => gameLoop(delta));
 }
@@ -163,6 +164,12 @@ function cleanUp() {
 			}
 		}
 	});
+
+	if (gameState.isGameOver === true) {
+		setTimeout(() => {
+			startNewGame()
+		}, 2500);
+	}
 }
 
 function displayInformation() {
@@ -185,8 +192,8 @@ function displayInformation() {
 }
 
 function startNewGame() {
-	if (gameState.players.length < 2) return;
-	if (gameState.isGameOver === false) return;
+	if (gameState.players.length < 2) return false;
+	if (gameState.isGameOver === false) return false;
 
 	const p1Name = pickPlayer();
 	const p2Name = pickPlayer(p1Name);
@@ -206,6 +213,8 @@ function startNewGame() {
 	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
 	spawnBullet("p1");
 	displayInformation();
+
+	return true;
 }
 
 function pickPlayer(player: string = ""): string {
@@ -230,6 +239,25 @@ client.on("message", (channel: string, userstate: User, message: string, self: U
 		if (message === "!newGame") {
 			//client.say(channel, "We are playing a game of Tanks");
 			startNewGame();
+		}
+
+		if (message === "!testL") {
+			const output = [];
+
+			gameState.leaderboard.sort((a, b) => {
+				return b.score - a.score;
+			});
+
+			gameState.leaderboard.forEach((player, index) => {
+				if (index < 3) {
+					output.push(`${index + 1}) ${player.displayName}: ${player.score}`);
+				}
+			});
+
+			if (gameState.leaderboard.length > 0) {
+				client.say(channel, output.join(" | "));
+			}
+			//console.log(output.join(" | "));
 		}
 	}
 });
