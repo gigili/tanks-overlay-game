@@ -41,5 +41,6 @@ export type GameState = {
 		winner: PIXI.Text | null
 	},
 	players: { username: string, displayName: string }[],
-	leaderboard: { displayName: string, score: number }[]
+	leaderboard: { displayName: string, score: number }[],
+	gameStarting: boolean
 }

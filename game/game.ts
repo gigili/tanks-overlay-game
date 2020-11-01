@@ -37,11 +37,9 @@ export const gameState: GameState = {
 		p2Health: null,
 		winner: null,
 	},
-	players: [
-		{username: 'p1', displayName: 'p1'},
-		{username: 'p2', displayName: 'p2'},
-	],
-	leaderboard: []
+	players: [],
+	leaderboard: [],
+	gameStarting: false
 };
 
 //@ts-ignore
@@ -62,6 +60,16 @@ const WinnerTextProperties = {
 };
 
 function setup() {
+
+	if (process.env.DEVELOPMENT === "1") {
+		gameState.players = [
+			{username: 'p1', displayName: 'p1'},
+			{username: 'p2', displayName: 'p2'},
+			{username: 'gacbl', displayName: 'GacBL'},
+			{username: 'thatn00b__', displayName: 'ThatN00b__'},
+		];
+	}
+
 	gameState.labels.p1Health = new PIXI.Text("", HPTextProperties);
 	gameState.labels.p1Health.position.set(60, window.innerHeight - 85);
 
@@ -165,7 +173,8 @@ function cleanUp() {
 		}
 	});
 
-	if (gameState.isGameOver === true) {
+	if (gameState.isGameOver === true && !gameState.gameStarting) {
+		gameState.gameStarting = true;
 		setTimeout(() => {
 			startNewGame()
 		}, 2500);
@@ -195,7 +204,7 @@ function startNewGame() {
 	if (gameState.players.length < 2) return false;
 	if (gameState.isGameOver === false) return false;
 
-	const p1Name = pickPlayer();
+	const p1Name = getRandomPlayer();
 	const p2Name = pickPlayer(p1Name);
 
 	gameState.p1 = new Player(0, window.innerHeight - 100, false, p1Name);
@@ -214,18 +223,23 @@ function startNewGame() {
 	spawnBullet("p1");
 	displayInformation();
 
+	gameState.gameStarting = false;
+
 	return true;
 }
 
 function pickPlayer(player: string = ""): string {
 	let name = "";
-
-	do {
-		const index = Math.floor(Math.random() * gameState.players.length);
-		name = gameState.players[index].displayName;
-	} while ((name === player || name == ""));
+	while ((name === player || name == "")) {
+		name = getRandomPlayer();
+	}
 
 	return name;
+}
+
+function getRandomPlayer() {
+	const index = Math.floor(Math.random() * gameState.players.length);
+	return gameState.players[index].displayName;
 }
 
 client.connect().catch(err => console.error(err));
