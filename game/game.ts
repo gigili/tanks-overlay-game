@@ -72,14 +72,14 @@ const ScoreBoardTextProperties = {
 
 function setup() {
 
-	if (process.env.DEVELOPMENT === "1") {
+	/*if (process.env.DEVELOPMENT === "1") {
 		gameState.players = [
 			{username: 'p1', displayName: 'p1'},
 			{username: 'p2', displayName: 'p2'},
 			{username: 'gacbl', displayName: 'GacBL'},
 			{username: 'thatn00b__', displayName: 'ThatN00b__'},
 		];
-	}
+	}*/
 
 	gameState.labels.p1Health = new PIXI.Text("", HPTextProperties);
 	gameState.labels.p1Health.position.set(60, window.innerHeight - 85);
@@ -196,7 +196,7 @@ function cleanUp() {
 		gameState.gameStarting = true;
 		setTimeout(() => {
 			startNewGame()
-		}, 2500);
+		}, 5500);
 	}
 }
 
