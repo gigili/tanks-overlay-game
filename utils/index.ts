@@ -4,7 +4,7 @@ import {gameState} from "../game/game";
 
 export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 	const bulletPosition = b.sprite.getBounds().width + b.sprite.position.x;
-	const p1Position = gameState.p1.sprite.position.x + gameState.p1.sprite.getBounds().width + 30;
+	const p1Position = gameState.p1.sprite.position.x + gameState.p1.sprite.getBounds().width + 35;
 	const p2Position = gameState.p2.sprite.position.x - gameState.p2.sprite.getBounds().width + 30;
 
 	let isHit = false;
@@ -27,6 +27,17 @@ export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 		gameState.isGameOver = true;
 		gameState.winner = gameState.currentMove === "p1" ? gameState.p1.displayName : gameState.p2.displayName;
 		gameState.bullet.sprite.isMoving = false;
+
+		const playerIndex = gameState.leaderboard.findIndex((player) => player.displayName === gameState.winner);
+		if (playerIndex !== -1) {
+			gameState.leaderboard[playerIndex].score += 1;
+		} else {
+			gameState.leaderboard.push({displayName: gameState.winner, score: 1});
+		}
+
+		gameState.leaderboard.sort((a, b) => {
+			return b.score - a.score;
+		});
 	}
 
 	return isHit;

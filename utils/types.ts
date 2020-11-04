@@ -38,7 +38,8 @@ export type GameState = {
 	labels: {
 		p1Health: PIXI.Text | null,
 		p2Health: PIXI.Text | null,
-		winner: PIXI.Text | null
+		winner: PIXI.Text | null,
+		scoreboard: PIXI.Text | null,
 	},
 	players: { username: string, displayName: string }[],
 	leaderboard: { displayName: string, score: number }[],

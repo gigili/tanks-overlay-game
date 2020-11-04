@@ -13,6 +13,7 @@ export class Player {
 		this.sprite.position.set(this.posX, this.posY);
 		this.sprite.spriteName = "Player";
 		this.sprite.isMoving = false;
+		this.sprite.hitArea = new PIXI.Rectangle(0, 0, this.sprite.width, this.sprite.height);
 
 		if (this.isReversed) {
 			this.sprite.scale.x = -1;

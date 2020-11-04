@@ -36,6 +36,7 @@ export const gameState: GameState = {
 		p1Health: null,
 		p2Health: null,
 		winner: null,
+		scoreboard: null
 	},
 	players: [],
 	leaderboard: [],
@@ -45,9 +46,12 @@ export const gameState: GameState = {
 //@ts-ignore
 window.gameState = gameState;
 
+const smallFontSize = "40px";
+const largeFontSize = "80px";
+
 const HPTextProperties = {
 	align: "center",
-	fontSize: "15px",
+	fontSize: smallFontSize,
 	fontFamily: "Arial",
 	fill: "red",
 	fontWeight: "bold"
@@ -56,7 +60,14 @@ const HPTextProperties = {
 const WinnerTextProperties = {
 	...HPTextProperties,
 	fill: "green",
-	fontSize: "30px"
+	fontSize: largeFontSize
+};
+
+const ScoreBoardTextProperties = {
+	...HPTextProperties,
+	align: "left",
+	fill: "black",
+	fontSize: smallFontSize
 };
 
 function setup() {
@@ -76,16 +87,24 @@ function setup() {
 	gameState.labels.p2Health = new PIXI.Text("", HPTextProperties);
 	gameState.labels.p2Health.position.set(window.innerWidth - 115, window.innerHeight - 85);
 
+	gameState.labels.scoreboard = new PIXI.Text("", ScoreBoardTextProperties);
+	gameState.labels.scoreboard.position.set(60, window.innerHeight - 150);
+
 	app.stage.addChild(gameState.labels.p1Health);
 	app.stage.addChild(gameState.labels.p2Health);
+	app.stage.addChild(gameState.labels.scoreboard);
 
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
 	app.stage.addChild(gameState.labels.winner);
 
 	let gameStarted = false;
-	while (!gameStarted) {
+	const startNewGameInterval = setInterval(() => {
 		gameStarted = startNewGame();
-	}
+
+		if (gameStarted) {
+			clearInterval(startNewGameInterval);
+		}
+	}, 2000);
 
 	app.ticker.add(delta => gameLoop(delta));
 }
@@ -185,12 +204,18 @@ function displayInformation() {
 	gameState.labels.p1Health.text = `${gameState.p1.displayName}\n${gameState.p1.health}`;
 	gameState.labels.p2Health.text = `${gameState.p2.displayName}\n${gameState.p2.health}`;
 
+	const startPointP1 = gameState.p1.posX;
+	const startPointP2 = gameState.p2.posX - gameState.labels.p2Health.width;
+
+	gameState.labels.p1Health.position.set(startPointP1, window.innerHeight - gameState.labels.p1Health.height - 50);
+	gameState.labels.p2Health.position.set(startPointP2 - 10, window.innerHeight - gameState.labels.p1Health.height - 50);
+
 	const winnerText = (gameState.isGameOver === null || gameState.winner === null) ? "" : `WINNER: ${gameState.winner || ''}`;
 	gameState.labels.winner.text = winnerText;
 	gameState.labels.winner.anchor.set(0.5, 0.5);
 	gameState.labels.winner.position.set(
 		window.innerWidth / 2,
-		window.innerHeight - 30
+		window.innerHeight - gameState.labels.winner.height - 5
 	);
 
 	if (winnerText.length > 0) {
@@ -198,6 +223,8 @@ function displayInformation() {
 			gameState.winner = null;
 		}, 5000);
 	}
+
+	displayScoreBoard();
 }
 
 function startNewGame() {
@@ -244,12 +271,12 @@ function getRandomPlayer() {
 
 client.connect().catch(err => console.error(err));
 
-client.on("message", (channel: string, userstate: User, message: string, self: User) => {
+client.on("message", (channel: string, userState: User, message: string, self: User) => {
 	if (self) return;
 
-	addNewPlayer(userstate);
+	addNewPlayer(userState);
 
-	if (userstate.username === "gacbl") {
+	if (userState.username === "gacbl") {
 		if (message === "!newGame") {
 			//client.say(channel, "We are playing a game of Tanks");
 			startNewGame();
@@ -285,4 +312,16 @@ function addNewPlayer(user: User) {
 
 	const username = user.username;
 	gameState.players.push({username, displayName: user["display-name"]});
+}
+
+function displayScoreBoard() {
+	let scoreBoardInfo = [];
+
+	const topPlayers = gameState.leaderboard.slice(0, 3);
+	topPlayers.forEach((player, index) => {
+		scoreBoardInfo.push(`${index + 1}. ${player.displayName}: ${player.score}`);
+	});
+
+	gameState.labels.scoreboard.text = scoreBoardInfo.join("\n");
+	gameState.labels.scoreboard.position.set(60, window.innerHeight - gameState.labels.scoreboard.height - 250);
 }
