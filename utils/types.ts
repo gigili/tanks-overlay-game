@@ -7,6 +7,10 @@ export interface Sprite extends PIXI.Sprite {
 	isMoving: boolean
 }
 
+export interface Graphics extends PIXI.Graphics {
+	spriteName: string
+}
+
 export type User = {
 	'badges': { 'broadcaster': string, 'warcraft': string },
 	'color': string,
@@ -40,8 +44,11 @@ export type GameState = {
 		p2Health: PIXI.Text | null,
 		winner: PIXI.Text | null,
 		scoreboard: PIXI.Text | null,
+		scoreboardBorder: PIXI.Rectangle | null
 	},
 	players: { username: string, displayName: string }[],
 	leaderboard: { displayName: string, score: number }[],
-	gameStarting: boolean
+	gameStarting: boolean,
+	graphics: PIXI.Graphics | null,
+	showScoreBoard: boolean
 }

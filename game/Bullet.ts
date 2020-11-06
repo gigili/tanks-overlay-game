@@ -14,7 +14,7 @@ export const POSITION = {
 export class Bullet {
 	sprite = null;
 	damage = 25;
-	speed = 5;
+	speed = 7;
 
 	constructor(public positionKey, private readonly isReversed = false) {
 		this.setup();

@@ -36,11 +36,14 @@ export const gameState: GameState = {
 		p1Health: null,
 		p2Health: null,
 		winner: null,
-		scoreboard: null
+		scoreboard: null,
+		scoreboardBorder: null,
 	},
 	players: [],
 	leaderboard: [],
-	gameStarting: false
+	gameStarting: false,
+	graphics: null,
+	showScoreBoard: false
 };
 
 //@ts-ignore
@@ -72,14 +75,15 @@ const ScoreBoardTextProperties = {
 
 function setup() {
 
-	/*if (process.env.DEVELOPMENT === "1") {
+	if (process.env.DEVELOPMENT === "1") {
 		gameState.players = [
 			{username: 'p1', displayName: 'p1'},
 			{username: 'p2', displayName: 'p2'},
 			{username: 'gacbl', displayName: 'GacBL'},
 			{username: 'thatn00b__', displayName: 'ThatN00b__'},
+			{username: 'lycan1534', displayName: 'Lycan1534'},
 		];
-	}*/
+	}
 
 	gameState.labels.p1Health = new PIXI.Text("", HPTextProperties);
 	gameState.labels.p1Health.position.set(60, window.innerHeight - 85);
@@ -90,12 +94,13 @@ function setup() {
 	gameState.labels.scoreboard = new PIXI.Text("", ScoreBoardTextProperties);
 	gameState.labels.scoreboard.position.set(60, window.innerHeight - 150);
 
-	app.stage.addChild(gameState.labels.p1Health);
-	app.stage.addChild(gameState.labels.p2Health);
-	app.stage.addChild(gameState.labels.scoreboard);
+	gameState.labels.scoreboardBorder = new PIXI.Rectangle(0, 0, 0, 0);
 
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
-	app.stage.addChild(gameState.labels.winner);
+
+	gameState.graphics = new PIXI.Graphics();
+	//@ts-ignore
+	gameState.graphics.spriteName = "graphics";
 
 	let gameStarted = false;
 	const startNewGameInterval = setInterval(() => {
@@ -105,6 +110,12 @@ function setup() {
 			clearInterval(startNewGameInterval);
 		}
 	}, 2000);
+
+	app.stage.addChild(gameState.graphics);
+	app.stage.addChild(gameState.labels.p1Health);
+	app.stage.addChild(gameState.labels.p2Health);
+	app.stage.addChild(gameState.labels.scoreboard);
+	app.stage.addChild(gameState.labels.winner);
 
 	app.ticker.add(delta => gameLoop(delta));
 }
@@ -190,6 +201,10 @@ function cleanUp() {
 				app.stage.removeChildAt(index);
 			}
 		}
+
+		if (gameState.isGameOver && child.spriteName === "Player") {
+			app.stage.removeChildAt(index);
+		}
 	});
 
 	if (gameState.isGameOver === true && !gameState.gameStarting) {
@@ -204,11 +219,13 @@ function displayInformation() {
 	gameState.labels.p1Health.text = `${gameState.p1.displayName}\n${gameState.p1.health}`;
 	gameState.labels.p2Health.text = `${gameState.p2.displayName}\n${gameState.p2.health}`;
 
-	const startPointP1 = gameState.p1.posX;
-	const startPointP2 = gameState.p2.posX - gameState.labels.p2Health.width;
+	if (gameState.isGameOver) {
+		gameState.labels.p1Health.text = ``;
+		gameState.labels.p2Health.text = ``;
+	}
 
-	gameState.labels.p1Health.position.set(startPointP1, window.innerHeight - gameState.labels.p1Health.height - 50);
-	gameState.labels.p2Health.position.set(startPointP2 - 10, window.innerHeight - gameState.labels.p1Health.height - 50);
+	gameState.labels.p1Health.position.set(50, window.innerHeight - gameState.labels.p1Health.height - 50);
+	gameState.labels.p2Health.position.set(window.innerWidth - gameState.labels.p2Health.width - 50, window.innerHeight - gameState.labels.p1Health.height - 50);
 
 	const winnerText = (gameState.isGameOver === null || gameState.winner === null) ? "" : `WINNER: ${gameState.winner || ''}`;
 	gameState.labels.winner.text = winnerText;
@@ -227,6 +244,37 @@ function displayInformation() {
 	displayScoreBoard();
 }
 
+function displayScoreBoard() {
+	const scoreBoardInfo = [];
+
+	const topPlayers = gameState.leaderboard.slice(0, 3);
+	topPlayers.forEach((player, index) => {
+		scoreBoardInfo.push(`${index + 1}. ${player.displayName}: ${player.score}`);
+	});
+
+	if (!gameState.showScoreBoard) {
+		scoreBoardInfo.length = 0;
+	}
+
+	gameState.labels.scoreboard.text = scoreBoardInfo.join("\n");
+	gameState.labels.scoreboard.position.set(20, window.innerHeight - gameState.labels.scoreboard.height - 250);
+
+	const label = gameState.labels.scoreboard;
+
+	gameState.graphics.clear();
+	if (scoreBoardInfo.length > 0) {
+		const borderOffset = 5;
+		gameState.graphics.beginFill(0xF1F1FC);
+		gameState.graphics.lineStyle(2, 0x000000);
+		gameState.graphics.drawRect(
+			label.position.x - borderOffset,
+			label.position.y - borderOffset,
+			label.width + borderOffset + 5,
+			label.height + borderOffset + 5
+		);
+	}
+}
+
 function startNewGame() {
 	if (gameState.players.length < 2) return false;
 	if (gameState.isGameOver === false) return false;
@@ -236,6 +284,8 @@ function startNewGame() {
 
 	gameState.p1 = new Player(0, window.innerHeight - 100, false, p1Name);
 	gameState.p2 = new Player(window.innerWidth, window.innerHeight - 100, true, p2Name);
+
+	displayInformation();
 
 	app.stage.addChild(gameState.p1.sprite);
 	app.stage.addChild(gameState.p2.sprite);
@@ -248,9 +298,12 @@ function startNewGame() {
 	gameState.isGameOver = null;
 	gameState.bulletRange = pickBulletDistance(gameState.p1, gameState.p2);
 	spawnBullet("p1");
-	displayInformation();
 
 	gameState.gameStarting = false;
+
+	setTimeout(() => {
+		gameState.showScoreBoard = false;
+	}, 2500);
 
 	return true;
 }
@@ -312,16 +365,4 @@ function addNewPlayer(user: User) {
 
 	const username = user.username;
 	gameState.players.push({username, displayName: user["display-name"]});
-}
-
-function displayScoreBoard() {
-	let scoreBoardInfo = [];
-
-	const topPlayers = gameState.leaderboard.slice(0, 3);
-	topPlayers.forEach((player, index) => {
-		scoreBoardInfo.push(`${index + 1}. ${player.displayName}: ${player.score}`);
-	});
-
-	gameState.labels.scoreboard.text = scoreBoardInfo.join("\n");
-	gameState.labels.scoreboard.position.set(60, window.innerHeight - gameState.labels.scoreboard.height - 250);
 }

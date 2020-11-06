@@ -25,6 +25,7 @@ export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 
 	if (gameState.p1.health <= 0 || gameState.p2.health <= 0) {
 		gameState.isGameOver = true;
+		gameState.showScoreBoard = true;
 		gameState.winner = gameState.currentMove === "p1" ? gameState.p1.displayName : gameState.p2.displayName;
 		gameState.bullet.sprite.isMoving = false;
 
