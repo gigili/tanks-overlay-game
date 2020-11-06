@@ -261,6 +261,8 @@ function displayScoreBoard() {
 	const label = gameState.labels.scoreboard;
 
 	gameState.graphics.clear();
+	gameState.graphics.beginFill(0xF1F1FC)
+	gameState.graphics.drawRect(0, window.innerHeight - 150, window.innerWidth, window.innerHeight)
 	if (scoreBoardInfo.length > 0) {
 		const borderOffset = 5;
 		gameState.graphics.beginFill(0xF1F1FC);
