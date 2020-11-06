@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm run build
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
           path: |
             **/node_modules
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run build
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
