@@ -13,7 +13,9 @@ To add this game as an overlay for your own stream you can do so by using the li
 
 `https://gigili.github.io/tanks-overlay-game/?username=` 
 
-and filling in your twitch username
+and filling in your twitch username. 
+
+If you don't want to have a background you can also pass an argument `&nogbg=1` and ti will remove the background color
 
 # Game setup
 
