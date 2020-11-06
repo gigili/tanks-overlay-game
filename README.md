@@ -7,6 +7,14 @@ It will only pick viewers that have sent a message so that it does not expose pe
 # Thank you / Credits 
  * Big thank you to [Jay](https://github.com/justJay-dev) for creating bullet assets.
 
+# Adding it as an overlay
+
+To add this game as an overlay for your own stream you can do so by using the link:
+
+`https://gigili.github.io/tanks-overlay-game/?username=` 
+
+and filling in your twitch username
+
 # Game setup
 
  * Clone the repo
@@ -19,6 +27,6 @@ It will only pick viewers that have sent a message so that it does not expose pe
  
 # TODOS:
    * [ ] Add a GIF of a sample gameplay
-   * [ ] Create new design for leaderboard
+   * [x] Create new design for leaderboard
    * [ ] Align player names and health info to be center with the tank asset
    * [ ] Adjust font sizes according to the available screen space
