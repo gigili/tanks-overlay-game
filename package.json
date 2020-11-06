@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "parcel index.html -p 5050 --open",
-    "build": "parcel build index.html --out-dir prod/ && cp -r assets/ prod/"
+    "build": "parcel build index.html --out-dir prod/ && cp -r assets/ prod/ --public-url ./"
   },
   "author": {
     "name": "Igor Ilic",
