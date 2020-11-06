@@ -7,10 +7,6 @@ export interface Sprite extends PIXI.Sprite {
 	isMoving: boolean
 }
 
-export interface Graphics extends PIXI.Graphics {
-	spriteName: string
-}
-
 export type User = {
 	'badges': { 'broadcaster': string, 'warcraft': string },
 	'color': string,

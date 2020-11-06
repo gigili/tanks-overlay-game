@@ -6,3 +6,4 @@ node_modules/
 assets/sprites/kenny/
 idea.md
 .parcel-cache/
+prod/

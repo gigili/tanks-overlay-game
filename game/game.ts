@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import {Player} from "./Player";
 import {Bullet} from "./Bullet";
 import {doesOverlap, pickBulletDistance} from "../utils";
-import {client} from "../utils/tmi";
+import {client, urlParams} from "../utils/tmi";
 import {GameState, Sprite, User} from "../utils/types";
 
 const app = new PIXI.Application({
@@ -14,11 +14,11 @@ const app = new PIXI.Application({
 });
 
 PIXI.Loader.shared
-	.add("../assets/sprites/tank.png")
-	//.add("../assets/sprites/bullet.png")
-	.add("../assets/sprites/bullets/melkey.png")
-	.add("../assets/sprites/bullets/pride.png")
-	.add("../assets/sprites/bullets/regular.png")
+	.add("./assets/sprites/tank.png")
+	//.add(""./assets/sprites/bullet.png")
+	.add("./assets/sprites/bullets/melkey.png")
+	.add("./assets/sprites/bullets/pride.png")
+	.add("./assets/sprites/bullets/regular.png")
 	.load(setup);
 
 export const gameState: GameState = {
@@ -46,8 +46,10 @@ export const gameState: GameState = {
 	showScoreBoard: false
 };
 
-//@ts-ignore
-window.gameState = gameState;
+if (process.env.DEVELOPMENT === "1") {
+	//@ts-ignore
+	window.gameState = gameState;
+}
 
 const smallFontSize = "40px";
 const largeFontSize = "80px";
@@ -77,10 +79,9 @@ function setup() {
 
 	if (process.env.DEVELOPMENT === "1") {
 		gameState.players = [
-			{username: 'p1', displayName: 'p1'},
-			{username: 'p2', displayName: 'p2'},
 			{username: 'gacbl', displayName: 'GacBL'},
 			{username: 'thatn00b__', displayName: 'ThatN00b__'},
+			{username: 'whitep4nth3r', displayName: 'whitep4nth3r'},
 			{username: 'lycan1534', displayName: 'Lycan1534'},
 		];
 	}
@@ -99,8 +100,6 @@ function setup() {
 	gameState.labels.winner = new PIXI.Text("", WinnerTextProperties);
 
 	gameState.graphics = new PIXI.Graphics();
-	//@ts-ignore
-	gameState.graphics.spriteName = "graphics";
 
 	let gameStarted = false;
 	const startNewGameInterval = setInterval(() => {
@@ -276,6 +275,12 @@ function displayScoreBoard() {
 }
 
 function startNewGame() {
+	if (gameState.showScoreBoard) {
+		setTimeout(() => {
+			gameState.showScoreBoard = false;
+		}, 2500);
+	}
+
 	if (gameState.players.length < 2) return false;
 	if (gameState.isGameOver === false) return false;
 
@@ -301,10 +306,6 @@ function startNewGame() {
 
 	gameState.gameStarting = false;
 
-	setTimeout(() => {
-		gameState.showScoreBoard = false;
-	}, 2500);
-
 	return true;
 }
 
@@ -329,31 +330,27 @@ client.on("message", (channel: string, userState: User, message: string, self: U
 
 	addNewPlayer(userState);
 
-	if (userState.username === "gacbl") {
-		if (message === "!newGame") {
-			//client.say(channel, "We are playing a game of Tanks");
-			startNewGame();
-		}
-
-		if (message === "!testL") {
-			const output = [];
-
-			gameState.leaderboard.sort((a, b) => {
-				return b.score - a.score;
-			});
-
-			gameState.leaderboard.forEach((player, index) => {
-				if (index < 3) {
-					output.push(`${index + 1}) ${player.displayName}: ${player.score}`);
+	if (userState.username === urlParams.get("username")) {
+		const data = message.split(" ");
+		const [msg, args] = data;
+		switch (msg) {
+			case "!testL":
+				const output = [];
+				if (gameState.leaderboard.length > 0) {
+					client.say(channel, output.join(" | ")).catch(console.error);
 				}
-			});
-
-			if (gameState.leaderboard.length > 0) {
-				client.say(channel, output.join(" | "));
-			}
-			//console.log(output.join(" | "));
+				break;
+			case "!removePlayer":
+				gameState.players = gameState.players.filter(player => player.username !== args);
+				gameState.leaderboard = gameState.leaderboard.filter(player => player.displayName.toLowerCase() !== args.toLowerCase());
+				break;
 		}
 	}
+});
+
+client.on("ban", (channel: string, username: string) => {
+	gameState.players = gameState.players.filter(player => player.username.toLowerCase() !== username.toLowerCase());
+	gameState.leaderboard = gameState.leaderboard.filter(player => player.displayName.toLowerCase() !== username.toLowerCase());
 });
 
 function addNewPlayer(user: User) {

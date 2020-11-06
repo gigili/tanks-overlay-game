@@ -38,7 +38,7 @@ export class Bullet {
 				break;
 		}
 
-		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources[`../assets/sprites/bullets/${sprite}.png`].texture);
+		this.sprite = new PIXI.Sprite(PIXI.Loader.shared.resources[`./assets/sprites/bullets/${sprite}.png`].texture);
 		this.sprite.position.set(POSITION[this.positionKey].x, POSITION[this.positionKey].y);
 		this.sprite.spriteName = "Bullet";
 		this.sprite.isMoving = true;
