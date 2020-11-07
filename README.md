@@ -15,7 +15,7 @@ To add this game as an overlay for your own stream you can do so by using the li
 
 and filling in your twitch username. 
 
-If you don't want to have a background you can also pass an argument `&nogbg=1` and ti will remove the background color
+If you don't want to have a background you can also pass an argument `&nobg=1` and it will remove the background color from the game.
 
 # Game setup
 
