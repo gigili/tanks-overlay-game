@@ -40,7 +40,7 @@ export function doesOverlap(b: Bullet, currentPlayer = "p1"): boolean {
 			return b.score - a.score;
 		});
 
-		gameState.players = gameState.players.filter(player => (player.displayName !== gameState.p1.displayName && player.displayName !== gameState.p2.displayName));
+		//gameState.players = gameState.players.filter(player => (player.displayName !== gameState.p1.displayName && player.displayName !== gameState.p2.displayName));
 	}
 
 	return isHit;
